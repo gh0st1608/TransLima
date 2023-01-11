@@ -1,0 +1,135 @@
+﻿<?php 
+//require_once ('config/db.php');
+//require_once ('config/conexion.php');
+session_start();
+$sucursal = $_SESSION['idsucursal'];
+require('ajax/fpdf/fpdf.php');
+date_default_timezone_set("America/Lima");
+
+$con=mysqli_connect("localhost","root","","transporte");
+ $idfac = $_GET['idfactura'];
+ $id_factura = $_GET['idfactura'];
+    $count_queryempresa   = mysqli_query($con, "SELECT * FROM tb_empresa WHERE id_empresa = 1 ");
+    $fetchempresa= mysqli_fetch_array($count_queryempresa);
+    $empresa = $fetchempresa['razon_social'];
+    $ruc = $fetchempresa['ruc'];
+   $direccion_empresa  = $fetchempresa['direccion'];
+  $count_queryfactura   = mysqli_query($con, "SELECT * FROM tb_facturacion_cab, tb_cliente WHERE tb_cliente.id_cliente = tb_facturacion_cab.id_cliente and id_facturacion = $id_factura ");
+   $fetchfactura= mysqli_fetch_array($count_queryfactura);
+   $n_documento  = $fetchfactura['n_documento'];
+   $fecha  = $fetchfactura['fecha_creado'];
+   //$fenvio  = $fetchfactura['fecha_envio'];
+   $Object = new DateTime();
+   $fenvio = $Object->format("d-m-Y h:i:s a");
+
+   $llegada  = $fetchfactura['id_sucursal_llegada'];
+   $igv  = $fetchfactura['igv_total'];
+   $total  = $fetchfactura['precio_total'];
+   $documento = ($fetchfactura['id_tipo_documento'] == '1') ? "FACTURA ELECTRONICA" : "BOLETA VENTA ELECTRONICA";
+   $tipdoc = ($fetchfactura['id_tipo_documento'] == '1') ? "01" : "03";
+   $tipdocidentidad = ($fetchfactura['id_tipo_documento'] == '1') ? "6" : "1";
+   $docidencli = $fetchfactura['n_documento_identidad'];
+
+  $sllegada="SELECT * FROM tb_sucursales where id_sucursal='$llegada'";
+  $ejecucion= mysqli_query($con, $sllegada);
+  $ejecullegada= mysqli_fetch_array($ejecucion);
+  $sucullegada=$ejecullegada['nombre_sucursal'];
+
+  $origen="SELECT * FROM tb_sucursales where id_sucursal='$sucursal'";
+  $orejecucion= mysqli_query($con, $origen);
+  $orejecullegada= mysqli_fetch_array($orejecucion);
+  $orsucullegada=$orejecullegada['nombre_sucursal'];
+  $campos="tb_cliente.id_cliente, tb_cliente.nombre_cliente, tb_cliente.telefono, tb_cliente.direccion,  tb_facturacion_cab.fecha_creado, tb_facturacion_cab.n_documento,tb_usuarios.nombre_usuario, tb_buses.placa, tb_facturacion_cab.precio_texto, tb_facturacion_cab.id_tipo_documento, tb_cliente.n_documento_identidad, tb_facturacion_cab.fecha_envio, tb_facturacion_cab.valor_total, tb_facturacion_cab.igv_total , tb_facturacion_cab.precio_total";
+$query_factura=mysqli_query($con,"select $campos from tb_facturacion_cab, tb_cliente, tb_usuarios, tb_buses where tb_facturacion_cab.id_usuario_creador = tb_usuarios.id_usuario and tb_buses.id_bus = tb_facturacion_cab.id_bus and tb_facturacion_cab.id_cliente = tb_cliente.id_cliente and tb_facturacion_cab.id_facturacion='".$idfac."'");
+ $client= mysqli_fetch_array($query_factura);
+$rowfac=mysqli_fetch_array($query_factura);
+// print_r($client);die();
+   //$subt = $rowfac['valor_total'];
+   //$igvf = $rowfac['igv_total'];
+   //$pre = $rowfac['precio_total'];
+ $sqltabledet=mysqli_query($con, "select * from tb_facturacion_det where tb_facturacion_det.id_facturacion ='".$idfac."'");
+   //$documento = ($rowfac['id_tipo_documento'] == '3') ? 'BOLETA DE VENTA ELECTRONICA' : 'FACTURACION ELECTRONICA';
+   //$des = ($rowfac['id_tipo_documento']=='3' ) ? 'DNI' : 'RUC';
+   //$br = ($rowfac['id_tipo_documento']=='3' ) ? '' : '<br>';
+$hash = 0 ;
+$pdf = new FPDF('P','mm','A4'); 
+//$pdf = new FPDF();
+$pdf->AddPage();
+$pdf->Image('ajax/logito.png',12,4,50);
+$pdf->SetFont('Arial','B',16);
+$pdf->Ln(10);
+$pdf->setX(1);
+$pdf->Cell(70,10,'EXPRESO LIMA E.I.R.L.',0,1,'C');
+$pdf->SetFont('Arial','B',8);
+$pdf->Cell(70,5,$empresa.'-'.$ruc,0,1,'L');
+$pdf->Cell(70,5,$direccion_empresa,0,1,'L');
+$pdf->Ln(-25);
+$pdf->setX(120);
+$pdf->Cell(70,25,'',1,1,'L');
+$pdf->Ln(-18);
+$pdf->setX(127);
+$pdf->SetFont('Arial','B',10);
+$pdf->Cell(70,5,$documento,0,1,'L');
+//$pdf->Ln(-10);
+$pdf->SetFont('Arial','B',20);
+$pdf->setX(127);
+$pdf->Cell(70,5,$n_documento,0,1,'L');
+
+$pdf->Ln(19);
+$pdf->Cell(180,30,'',1,1,'L');
+$pdf->Ln(-28);
+$pdf->SetFont('Arial','',9);
+$pdf->Cell(70,5,utf8_decode('Nombre/Razon Social: ').$client['nombre_cliente'],0,1,'L');
+$pdf->Cell(70,5,'DNI/RUC                      :  '.$client['n_documento_identidad'],0,1,'L');
+$pdf->Cell(70,5,utf8_decode('Dirección:         ').$client['direccion'],0,1,'L');
+$pdf->Cell(70,5,'Tipo de Pago              :         CONTADO',0,1,'L');
+
+$pdf->Ln(-20);
+$pdf->setX(130);
+$pdf->SetFont('Arial','',9);
+//$pdf->Cell(70,5,utf8_decode('Fecha de Emisíón: ').$fecha,0,1,'L');
+$pdf->setX(130);
+$pdf->Cell(70,5,'Fecha:  '.$fenvio,0,1,'L');
+$pdf->setX(130);
+$pdf->Cell(70,5,'Origen:         '.$orsucullegada,0,1,'L');
+$pdf->setX(130);
+$pdf->Cell(70,5,'Destino:         '.$sucullegada,0,1,'L');
+$pdf->Ln(10);
+$pdf->setX(80);
+$pdf->Cell(35,5,'..........................................................................................................................................................................................................',0,1,'C');
+$pdf->Cell(15,5,utf8_decode('N°#'),0,0,'C');
+$pdf->Cell(15,5,utf8_decode('CANTIDAD'),0,0,'C');
+$pdf->Cell(70,5,utf8_decode('DESCRIPCIÓN'),0,0,'C');
+$pdf->Cell(35,5,utf8_decode('PRECIO UNITARIO'),0,0,'C');
+$pdf->Cell(35,5,utf8_decode('PRECIO TOTAL'),0,1,'C');
+$pdf->setX(80);
+$pdf->Cell(35,5,'..........................................................................................................................................................................................................',0,1,'C');
+while ($rows=mysqli_fetch_array($sqltabledet)){  
+$hash++;
+$pdf->Cell(15,5,$hash,0,0,'C');
+$pdf->Cell(15,5,$rows['cantidad'],0,0,'C');
+$pdf->Cell(70,5,$rows['descripccion'],0,0,'C');
+$pdf->Cell(35,5,$rows['precio_unitario'],0,0,'C');
+$pdf->Cell(35,5,$rows['precio_total'],0,1,'C');
+
+        }
+$pdf->setX(80);
+$pdf->Cell(35,5,'..........................................................................................................................................................................................................',0,1,'C');
+$pdf->Ln(1);
+$pdf->SetFont('Arial','',10);
+// $pdf->Cell(70,5,$igv,0,1,'L');
+// $pdf->Cell(70,5,$total,0,1,'L');
+$pdf->setX(140);
+$pdf->Cell(70,5,'SubTotal: '.$client['valor_total'],0,1,'L');
+$pdf->setX(140);
+$pdf->Cell(70,5,'IGV         : '.$client['igv_total'],0,1,'L');
+$pdf->setX(140);
+$pdf->Cell(70,5,'Total       : '.$client['precio_total'],0,1,'L');
+//$pdf->Image($sucursal.'qrpdf.png',12,160,50);
+$pdf->Ln(83);
+$pdf->Cell(70,5,'GRACIAS POR SU PREFERENCIA',0,1,'L');
+$pdf->Ln(3);
+$pdf->MultiCell(180,5,utf8_decode(' Representación impresa de la  '.$documento.'  generada desde el sistema Expreso Lima E.I.R.L.'),0,0);
+$pdf->Output();
+?>
+
