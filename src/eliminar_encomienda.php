@@ -14,10 +14,7 @@
 	if (isset($_REQUEST['id_encomienda']))
 	{
 		$id_encomienda=intval($_REQUEST['id_encomienda']);
-		print_r('entrooooooooooooooooooooooooooogaaaaaaaaaaaaaaaaaaaaa');
-		print_r($id_encomienda);
 		$sqleliminar = mysqli_query($con,"update tb_encomienda_cab SET situacion = 2 WHERE id_encomienda='".$id_encomienda."'");
-
 		header('Location: encomienda.php');
 	}
 ?>

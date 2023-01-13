@@ -181,7 +181,11 @@ while ($row = mysqli_fetch_array($fetcha)) {
 						}
 							?>
 						</select>
-    </div>
+    		</div>
+			<input type="hidden" id="idsucursal" value="<?php echo $_SESSION['idsucursal'] ?>">
+			<input type="hidden" id="user_id" value="<?php echo $_SESSION['user_id'] ?>">
+
+
 </div>
 <div class="col-md-12" id="cambios">
 	<div class="pull-right">
@@ -243,7 +247,10 @@ while ($row = mysqli_fetch_array($fetcha)) {
 
 	<?php
 //include "footer.php";
+print_r($_SESSION['idsucursal']);
+print_r($_SESSION['user_id']);
 
+		
 function generarCodigo($longitud)
 {
     $key     = '';
@@ -366,6 +373,8 @@ function generarCodigo($longitud)
 			cliente = $('#id_cliente').val();
 			idbus = $('#idbus').val();
 			sucursales = $('#sucursal_llegada').val();
+			idsucursal = $('#idsucursal').val();
+			user_id = $('#user_id').val();
 			//alert(sucursales);
 
 			if (total != 0 && cliente.trim().length && idbus.trim().length   && sucursales.trim().length ) {
@@ -374,25 +383,25 @@ function generarCodigo($longitud)
 			subtotal = $('table#tablaencomienda').find('tr.subtotal td.valor').html();
 			igv = $('table#tablaencomienda').find('tr.igv td.valor').html();
 			total = $('table#tablaencomienda').find('tr.total td.valor').html();
-			console.log($('#datos_encomienda').serialize());
 			$.ajax({
 		        type: "POST",
 		        url: "./ajax/save_encomienda.php",
-		        data: $('#datos_encomienda').serialize()+'&fecha='+fecha+'&subtotal='+subtotal+'&igv='+igv+'&total='+total+'&tipdoc='+tipdoc,
+		        data: $('#datos_encomienda').serialize()+'&fecha='+fecha+'&subtotal='+subtotal+'&igv='+igv+'&total='+total+'&tipdoc='+tipdoc+'&idsucursal='+idsucursal+'&user_id='+user_id,
 				 beforeSend: function(objeto){
+					console.log($('#datos_encomienda').serialize());
 									  },
 		        success: function(datos){
 
 					var idfac = datos.split("-");
-					status = (idfac[1] == "El documento fue creada correctamente") ? 'success' : 'error' ;
-					alert(idfac[1]);
-	            	Swal('Mensaje',idfac[1],status);
+					status = (idfac[1] == "El documento fue creada correctamente desde form") ? 'success' : 'error' ;
+					//alert(idfac[1]);
+	            	//Swal('Mensaje',idfac[1],status);
 
 	            	var url = location.origin;
 	               idfac[0] = parseInt(idfac[0]);//idfac[0].replace(/ /g, "").toString();
 
-	              if (url == "http://localhost" || url == "http://localhost:8080") {
-	              	finurl = url +"/Expreso/ver_encomienda.php?id_encomienda="+idfac[0];
+	              if (url == "http://localhost" || url == "http://localhost:8001") {
+	              	finurl = url +"/ver_encomienda.php?id_encomienda="+idfac[0];
 	              	window.location.href  = finurl;
 	               }else{
 	               	window.location.href  = url + "/ver_encomienda.php?id_encomienda="+idfac[0];
@@ -428,7 +437,6 @@ function generarCodigo($longitud)
 		function validartipdoc ()
 		{
 			total = parseInt($('table#tablaencomienda').find('tr.total td.valor').html());
-			console.log(total);
 			if (total!=1) {
 				$('#tipdoc').attr({'disabled': 'true'});
 			}else{

@@ -61,7 +61,6 @@
 		$reload = './usuarios.php';
 		//main query to fetch the data
 		$sql="SELECT * FROM  $sTable $sWhere LIMIT $offset,$per_page";
-		print_r($sql);
 		$query = mysqli_query($con, $sql);
 		
 		//loop through fetched data

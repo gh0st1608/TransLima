@@ -1,9 +1,11 @@
 ﻿<?php
-include('is_logged.php');//Archivo verifica que el usario que intenta acceder a la URL esta logueado
-$session_id= session_id();
+    //include('is_logged.php');
+    session_start();
+    $session_id= session_id();
 	require_once ("../config/db.php");
     require_once ("../config/conexion.php");
 	include("../funciones.php");
+    
 	if (!empty($_POST['id_cliente']) and !empty($_POST['id_bus']))
 	{	
 		//$fecha = date("Y-m-d H:i:s");
@@ -14,9 +16,8 @@ $session_id= session_id();
 		$tipdoc=mysqli_real_escape_string($con,(strip_tags($_POST['tipdoc'],ENT_QUOTES)));
 		$id_sucu_llegada=mysqli_real_escape_string($con,(strip_tags($_POST['id_sucu_llegada'],ENT_QUOTES)));
 		$fecha=date("Y/m/d", strtotime(mysqli_real_escape_string($con,(strip_tags($_POST['fecha'],ENT_QUOTES)))));
-		$idsucupartida= $_SESSION['idsucursal'];
-		$usuario =$_SESSION['user_id'];
-//print_r($_POST);
+		$idsucupartida= $_POST['idsucursal'];
+		$usuario =$_POST['user_id'];
         $consignatario=mysqli_real_escape_string($con,(strip_tags($_POST['consignatario'],ENT_QUOTES)));
         $celular=mysqli_real_escape_string($con,(strip_tags($_POST['celular'],ENT_QUOTES)));
         $dni=mysqli_real_escape_string($con,(strip_tags($_POST['dni'],ENT_QUOTES)));
@@ -24,7 +25,7 @@ $session_id= session_id();
         $direccion_delivery=mysqli_real_escape_string($con,(strip_tags($_POST['direccion_delivery'],ENT_QUOTES)));
          $conductor=mysqli_real_escape_string($con,(strip_tags($_POST['conductor'],ENT_QUOTES)));
          $encargado=mysqli_real_escape_string($con,(strip_tags($_POST['id_encargado'],ENT_QUOTES)));
-  $id_pago=mysqli_real_escape_string($con,(strip_tags($_POST['id_pago'],ENT_QUOTES)));
+        $id_pago=mysqli_real_escape_string($con,(strip_tags($_POST['id_pago'],ENT_QUOTES)));
 
 
 		$subtotalcab=mysqli_real_escape_string($con,(strip_tags($_POST['subtotal'],ENT_QUOTES)));
@@ -249,7 +250,7 @@ $resultado = str_replace(",", "", $totalcab);
 
 
 		if ($respo){
-			echo $id_encomienda."-El documento fue creada correctamente";
+			echo $id_encomienda."-El documento fue creada correctamente".$sqlencocab;
 		} else{
 			echo "0-Lo siento algo ha salido mal intenta nuevamente.".mysqli_error($con);
 		}
