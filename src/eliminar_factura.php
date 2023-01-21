@@ -14,8 +14,6 @@
 	if (isset($_REQUEST['id_factura']))
 	{
 		$id_factura=intval($_REQUEST['id_factura']);
-		print_r('entrooooooooooooooooooooooooooogaaaaaaaaaaaaaaaaaaaaa');
-		print_r($id_factura);
 		$sqleliminar = mysqli_query($con,"update tb_facturacion_cab SET eliminado = 1 WHERE id_facturacion='".$id_factura."'");
 
 		header('Location: facturas.php');
